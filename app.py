@@ -26,7 +26,7 @@ DEFAULT_NUM_TOPICS = 4
 
 DATASETS = {
     '소셜벤처데이터': {
-        'path': '/data/소셜벤처실태조사_qual.csv',
+        'path': './data/소셜벤처실태조사_qual.csv',
         'url': 'https://www.kbiz.or.kr/ko/contest/view.do?seq=41&mnSeq=1202',
         'description': (
             'Data source: KBIZ 중소기업 중앙회, 중소기업 통계데이터' 
