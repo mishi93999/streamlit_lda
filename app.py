@@ -169,10 +169,10 @@ if __name__ == '__main__':
     st.header('Datasets')
     
     with st.expander('Dataset Description'):
-        st.markdown(DATASETS[selected_dataset]['description'])
-        st.markdown(DATASETS[selected_dataset]['url'])
+        st.markdown(DATASETS['description'])
+        st.markdown(DATASETS['url'])
 
-    text_column = DATASETS[selected_dataset]['column']
+    text_column = DATASETS['column']
     texts_df = generate_texts_df(selected_dataset)
     docs = generate_docs(texts_df, text_column, ngrams=ngrams)
 
