@@ -25,15 +25,22 @@ DEFAULT_HIGHLIGHT_PROBABILITY_MINIMUM = 0.001
 DEFAULT_NUM_TOPICS = 4
 
 DATASETS = {
-    '소셜벤처데이터': {
+    'Social Venture Data': {
         'path': './data/소셜벤처실태조사_qual.csv',
         'column': 'Text',
         'url': 'https://www.kbiz.or.kr/ko/contest/view.do?seq=41&mnSeq=1202',
         'description': (
-            'Data source: KBIZ 중소기업 중앙회, 중소기업 통계데이터' 
+            'KBIZ 중소기업 중앙회, 중소기업 통계데이터'
         )
     },
-    'Others': {}
+    'Airline Tweets': {
+        'path': './data/소셜벤처실태조사_qual.csv',
+        'column': 'Text',
+        'url': 'https://www.kaggle.com/crowdflower/twitter-airline-sentiment',
+        'description': (
+            'debugging'
+        )
+    }
 }
 
 # dataset = pd.read_csv('data/소셜벤처실태조사_qual.csv')
