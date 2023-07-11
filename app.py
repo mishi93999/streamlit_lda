@@ -34,7 +34,8 @@ DATASETS = {
     }
 }
 
-print(DATASETS)
+st.markdown(DATASETS[Text])
+
 # def lda_options():
 #     return {
 #         'num_topics': st.number_input('Number of Topics', min_value=1, value=9,
