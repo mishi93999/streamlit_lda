@@ -161,7 +161,7 @@ def train_projection(projection, n_components, df):
     return data
 
 if __name__ == '__main__':
-    st.set_page_config(page_title='Topic Modeling', page_icon='./data/favicon.png', layout='wide')
+    st.set_page_config(page_title='Topic Modeling', layout='wide')
 
     preprocessing_options = st.sidebar.form('preprocessing-options')
     with preprocessing_options:
@@ -192,7 +192,6 @@ if __name__ == '__main__':
 
     with st.expander('Additional Details'):
         st.markdown('The objective can be viewed as a matrix factorization.')
-        st.image('./data/mf.png', use_column_width=True)
         st.markdown('This factorization makes the methods much more efficient than directly characterizing documents '
                     'in term of words.')
         st.markdown('More information on LDA and NMF can be found at '
