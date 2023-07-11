@@ -161,3 +161,192 @@ def perplexity_section():
     st.markdown('Viz., https://en.wikipedia.org/wiki/Perplexity')
     st.latex(r'Perplexity = \exp\left(-\frac{\sum_d \log(p(w_d|\Phi, \alpha))}{N}\right)')
 
+
+def coherence_section():
+    with st.spinner('Calculating Coherence Score ...'):
+        coherence = calculate_coherence(st.session_state.model, st.session_state.corpus, 'u_mass')
+    key = 'previous_coherence_model_value'
+    delta = f'{coherence - st.session_state[key]:.4f}' if key in st.session_state else None
+    st.metric(label='Coherence Score', value=f'{coherence:.4f}', delta=delta)
+    st.session_state[key] = coherence
+    st.markdown('Viz., http://svn.aksw.org/papers/2015/WSDM_Topic_Evaluation/public.pdf')
+    st.latex(
+        r'C_{UMass} = \frac{2}{N \cdot (N - 1)}\sum_{i=2}^N\sum_{j=1}^{i-1}\log\frac{P(w_i, w_j) + \epsilon}{P(w_j)}')
+
+
+@st.experimental_memo()
+def train_projection(projection, n_components, df):
+    if projection == 'PCA':
+        projection_model = PCA(n_components=n_components)
+    elif projection == 'T-SNE':
+        projection_model = TSNE(n_components=n_components)
+    elif projection == 'UMAP':
+        projection_model = UMAP(n_components=n_components)
+    data = projection_model.fit_transform(df.drop(columns=['dominant_topic']))
+    return data
+
+
+if __name__ == '__main__':
+    st.set_page_config(page_title='Topic Modeling', page_icon='./data/favicon.png', layout='wide')
+    st.title('Topic Modeling')
+    st.header('Datasets')
+    
+    with st.expander('Dataset Description'):
+        st.markdown(DATASETS[selected_dataset]['description'])
+        st.markdown(DATASETS[selected_dataset]['url'])
+
+    text_column = DATASETS[selected_dataset]['column']
+    texts_df = generate_texts_df(selected_dataset)
+    docs = generate_docs(texts_df, text_column, ngrams=ngrams)
+
+    with st.expander('Sample Documents'):
+        sample_texts = texts_df[text_column].sample(5).values.tolist()
+        for index, text in enumerate(sample_texts):
+            st.markdown(f'**{index + 1}**: _{text}_')
+
+    with st.expander('Frequency Sized Corpus Wordcloud'):
+        wc = generate_wordcloud(docs)
+        st.image(wc.to_image(), caption='Dataset Wordcloud (Not A Topic Model)', use_column_width=True)
+        st.markdown('These are the remaining words after document preprocessing.')
+
+    with st.expander('Document Word Count Distribution'):
+        len_docs = [len(doc) for doc in docs]
+        fig, ax = plt.subplots()
+        sns.histplot(data=pd.DataFrame(len_docs, columns=['Words In Document']), discrete=True, ax=ax)
+        st.pyplot(fig)
+
+    model_key = st.sidebar.selectbox('Model', [None, *list(MODELS.keys())], on_change=clear_session_state)
+    model_options = st.sidebar.form('model-options')
+    if not model_key:
+        with st.sidebar:
+            st.write('Choose a Model to Continue ...')
+        st.stop()
+    with model_options:
+        st.header('Model Options')
+        model_kwargs = MODELS[model_key]['options']()
+        st.session_state['model_kwargs'] = model_kwargs
+        train_model_clicked = st.form_submit_button('Train Model')
+
+    if train_model_clicked:
+        with st.spinner('Training Model ...'):
+            id2word, corpus, model = train_model(docs, MODELS[model_key]['class'], **st.session_state.model_kwargs)
+        st.session_state.id2word = id2word
+        st.session_state.corpus = corpus
+        st.session_state.model = model
+
+    if 'model' not in st.session_state:
+        st.stop()
+
+    st.header('Model')
+    st.write(type(st.session_state.model).__name__)
+    st.write(st.session_state.model_kwargs)
+
+    st.header('Model Results')
+
+    topics = st.session_state.model.show_topics(formatted=False, num_words=50,
+                                                num_topics=st.session_state.model_kwargs['num_topics'], log=False)
+    with st.expander('Topic Word-Weighted Summaries'):
+        topic_summaries = {}
+        for topic in topics:
+            topic_index = topic[0]
+            topic_word_weights = topic[1]
+            topic_summaries[topic_index] = ' + '.join(
+                f'{weight:.3f} * {word}' for word, weight in topic_word_weights[:10])
+        for topic_index, topic_summary in topic_summaries.items():
+            st.markdown(f'**Topic {topic_index}**: _{topic_summary}_')
+
+    colors = random.sample(COLORS, k=model_kwargs['num_topics'])
+    with st.expander('Top N Topic Keywords Wordclouds'):
+        cols = st.columns(3)
+        for index, topic in enumerate(topics):
+            wc = WordCloud(font_path=WORDCLOUD_FONT_PATH, width=700, height=600,
+                           background_color='white', collocations=collocations, prefer_horizontal=1.0,
+                           color_func=lambda *args, **kwargs: colors[index])
+            with cols[index % 3]:
+                wc.generate_from_frequencies(dict(topic[1]))
+                st.image(wc.to_image(), caption=f'Topic #{index}', use_column_width=True)
+
+    with st.expander('Topic Highlighted Sentences'):
+        sample = texts_df.sample(10)
+        for index, row in sample.iterrows():
+            html_elements = []
+            for token in row[text_column].split():
+                if st.session_state.id2word.token2id.get(token) is None:
+                    html_elements.append(f'<span style="text-decoration:line-through;">{token}</span>')
+                else:
+                    term_topics = st.session_state.model.get_term_topics(token, minimum_probability=0)
+                    topic_probabilities = [term_topic[1] for term_topic in term_topics]
+                    max_topic_probability = max(topic_probabilities) if topic_probabilities else 0
+                    if max_topic_probability < highlight_probability_minimum:
+                        html_elements.append(token)
+                    else:
+                        max_topic_index = topic_probabilities.index(max_topic_probability)
+                        max_topic = term_topics[max_topic_index]
+                        background_color = colors[max_topic[0]]
+                        # color = 'white'
+                        color = white_or_black_text(background_color)
+                        html_elements.append(
+                            f'<span style="background-color: {background_color}; color: {color}; opacity: 0.5;">{token}</span>')
+            st.markdown(f'Document #{index}: {" ".join(html_elements)}', unsafe_allow_html=True)
+
+    has_log_perplexity = hasattr(st.session_state.model, 'log_perplexity')
+    with st.expander('Metrics'):
+        if has_log_perplexity:
+            left_column, right_column = st.columns(2)
+            with left_column:
+                perplexity_section()
+            with right_column:
+                coherence_section()
+        else:
+            coherence_section()
+
+    with st.expander('Low Dimensional Projections'):
+        with st.form('projections-form'):
+            left_column, right_column = st.columns(2)
+            projection = left_column.selectbox('Projection', ['PCA', 'T-SNE', 'UMAP'], help='TODO ...')
+            plot_type = right_column.selectbox('Plot', ['2D', '3D'], help='TODO ...')
+            n_components = 3
+            columns = [f'proj{i}' for i in range(1, 4)]
+            generate_projection_clicked = st.form_submit_button('Generate Projection')
+
+        if generate_projection_clicked:
+            topic_weights = []
+            for index, topic_weight in enumerate(st.session_state.model[st.session_state.corpus]):
+                weight_vector = [0] * int(st.session_state.model_kwargs['num_topics'])
+                for topic, weight in topic_weight:
+                    weight_vector[topic] = weight
+                topic_weights.append(weight_vector)
+            df = pd.DataFrame(topic_weights)
+            dominant_topic = df.idxmax(axis='columns').astype('string')
+            dominant_topic_percentage = df.max(axis='columns')
+            df = df.assign(dominant_topic=dominant_topic, dominant_topic_percentage=dominant_topic_percentage,
+                           text=texts_df[text_column])
+            with st.spinner('Training Projection'):
+                projections = train_projection(projection, n_components, df.drop(columns=['text']))
+            data = pd.concat([df, pd.DataFrame(projections, columns=columns)], axis=1)
+
+            px_options = {'color': 'dominant_topic', 'size': 'dominant_topic_percentage',
+                          'hover_data': ['dominant_topic', 'dominant_topic_percentage', 'text']}
+            if plot_type == '2D':
+                fig = px.scatter(data, x='proj1', y='proj2', **px_options)
+                st.plotly_chart(fig)
+                fig = px.scatter(data, x='proj1', y='proj3', **px_options)
+                st.plotly_chart(fig)
+                fig = px.scatter(data, x='proj2', y='proj3', **px_options)
+                st.plotly_chart(fig)
+            elif plot_type == '3D':
+                fig = px.scatter_3d(data, x='proj1', y='proj2', z='proj3', **px_options)
+                st.plotly_chart(fig)
+
+    if hasattr(st.session_state.model, 'inference'):  # gensim Nmf has no 'inference' attribute so pyLDAvis fails
+        if st.button('Generate pyLDAvis'):
+            with st.spinner('Creating pyLDAvis Visualization ...'):
+                py_lda_vis_data = pyLDAvis.gensim_models.prepare(st.session_state.model, st.session_state.corpus,
+                                                                 st.session_state.id2word)
+                py_lda_vis_html = pyLDAvis.prepared_data_to_html(py_lda_vis_data)
+            with st.expander('pyLDAvis', expanded=True):
+                st.markdown('pyLDAvis is designed to help users interpret the topics in a topic model that has been '
+                            'fit to a corpus of text data. The package extracts information from a fitted LDA topic '
+                            'model to inform an interactive web-based visualization.')
+                st.markdown('https://github.com/bmabey/pyLDAvis')
+                components.html(py_lda_vis_html, width=1300, height=800)
