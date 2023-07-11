@@ -35,7 +35,7 @@ DATASETS = {
     }
 }
 
-dataset = pd.read_csv(f'{dataset["path"]}')
+dataset = pd.read_csv(f'{DATASETS["path"]}')
 
 # def lda_options():
 #     return {
