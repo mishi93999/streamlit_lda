@@ -117,13 +117,13 @@ def calculate_coherence(model, corpus, coherence):
     coherence_model = CoherenceModel(model=model, corpus=corpus, coherence=coherence)
     return coherence_model.get_coherence()
 
-@st.experimental_memo()
-def white_or_black_text(background_color):
-    # https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
-    red = int(background_color[1:3], 16)
-    green = int(background_color[3:5], 16)
-    blue = int(background_color[5:], 16)
-    return 'black' if (red * 0.299 + green * 0.587 + blue * 0.114) > 186 else 'white'
+# @st.experimental_memo()
+# def white_or_black_text(background_color):
+#     # https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
+#     red = int(background_color[1:3], 16)
+#     green = int(background_color[3:5], 16)
+#     blue = int(background_color[5:], 16)
+#     return 'black' if (red * 0.299 + green * 0.587 + blue * 0.114) > 186 else 'white'
 
 
 def perplexity_section():
@@ -182,8 +182,6 @@ if __name__ == '__main__':
 
     st.title('Topic Modeling')
     st.header('What is topic modeling?')
-    with st.expander('Hero Image'):
-        st.image('./data/is-this-a-topic-modeling.jpg', caption='No ... no it\'s not ...', use_column_width=True)
     st.markdown(
         'Topic modeling is a broad term. It encompasses a number of specific statistical learning methods. '
         'These methods do the following: explain documents in terms of a set of topics and those topics in terms of '
