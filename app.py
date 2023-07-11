@@ -35,7 +35,7 @@ DATASETS = {
     }
 }
 
-dataset = pd.read_csv(f'{DATASETS["path"]}')
+dataset = pd.read_csv('/data/소셜벤처실태조사_qual.csv')
 
 # def lda_options():
 #     return {
