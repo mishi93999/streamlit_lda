@@ -35,7 +35,10 @@ DATASETS = {
     }
 }
 
-st.markdown(DATASETS[description])
+@st.experimental_memo()
+def generate_texts_df(selected_dataset: str):
+    dataset = DATASETS[selected_dataset]
+    return pd.read_csv(f'{dataset["path"]}')
 
 # def lda_options():
 #     return {
