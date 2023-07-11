@@ -26,7 +26,7 @@ DEFAULT_NUM_TOPICS = 4
 
 DATASETS = {
     '소셜벤처데이터': {
-        'path': './data/소셜벤처실태조사_qual.csv',
+        'path': '/data/소셜벤처실태조사_qual.csv',
         'url': 'https://www.kbiz.or.kr/ko/contest/view.do?seq=41&mnSeq=1202',
         'description': (
             'Data source: KBIZ 중소기업 중앙회, 중소기업 통계데이터' 
@@ -89,3 +89,75 @@ def nmf_options():
                                       help='Number of batches after which l2 norm of (v - Wh) is computed.'),
         'normalize': st.selectbox('Normalize', (True, False, None), help='Whether to normalize the result.')
     }
+    
+
+MODELS = {
+    'Latent Dirichlet Allocation': {
+        'options': lda_options,
+        'class': gensim.models.LdaModel,
+        'help': 'https://radimrehurek.com/gensim/models/ldamodel.html'
+    }
+}
+
+COLORS = [color for color in mcolors.XKCD_COLORS.values()]
+
+@st.experimental_memo()
+def generate_texts_df(selected_dataset: str):
+    dataset = DATASETS[selected_dataset]
+    return pd.read_csv(f'{dataset["path"]}')
+
+
+@st.experimental_memo()
+def denoise_docs(texts_df: pd.DataFrame, text_column: str):
+    texts = texts_df[text_column].values.tolist()
+    docs = [[w for w in simple_preprocess(doc, deacc=True) if w not in stopwords.words('english')] for doc in texts]
+    return docs
+
+@st.experimental_memo()
+def prepare_training_data(docs):
+    id2word = corpora.Dictionary(docs)
+    corpus = [id2word.doc2bow(doc) for doc in docs]
+    return id2word, corpus
+
+
+@st.experimental_memo()
+def train_model(docs, base_model, **kwargs):
+    id2word, corpus = prepare_training_data(docs)
+    model = base_model(corpus=corpus, id2word=id2word, **kwargs)
+    return id2word, corpus, model
+
+
+def clear_session_state():
+    for key in ('model_kwargs', 'id2word', 'corpus', 'model', 'previous_perplexity', 'previous_coherence_model_value'):
+        if key in st.session_state:
+            del st.session_state[key]
+
+
+def calculate_perplexity(model, corpus):
+    return np.exp2(-model.log_perplexity(corpus))
+
+
+def calculate_coherence(model, corpus, coherence):
+    coherence_model = CoherenceModel(model=model, corpus=corpus, coherence=coherence)
+    return coherence_model.get_coherence()
+
+
+@st.experimental_memo()
+def white_or_black_text(background_color):
+    # https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
+    red = int(background_color[1:3], 16)
+    green = int(background_color[3:5], 16)
+    blue = int(background_color[5:], 16)
+    return 'black' if (red * 0.299 + green * 0.587 + blue * 0.114) > 186 else 'white'
+
+
+def perplexity_section():
+    with st.spinner('Calculating Perplexity ...'):
+        perplexity = calculate_perplexity(st.session_state.model, st.session_state.corpus)
+    key = 'previous_perplexity'
+    delta = f'{perplexity - st.session_state[key]:.4}' if key in st.session_state else None
+    st.metric(label='Perplexity', value=f'{perplexity:.4f}', delta=delta, delta_color='inverse')
+    st.session_state[key] = perplexity
+    st.markdown('Viz., https://en.wikipedia.org/wiki/Perplexity')
+    st.latex(r'Perplexity = \exp\left(-\frac{\sum_d \log(p(w_d|\Phi, \alpha))}{N}\right)')
+
