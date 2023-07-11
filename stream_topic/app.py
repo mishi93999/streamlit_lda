@@ -38,46 +38,46 @@ DATASETS = {
 
 # dataset = pd.read_csv('data/소셜벤처실태조사_qual.csv')
 
-# def lda_options():
-#     return {
-#         'num_topics': st.number_input('Number of Topics', min_value=1, value=9,
-#                                       help='The number of requested latent topics to be extracted from the training corpus.'),
-#         'chunksize': st.number_input('Chunk Size', min_value=1, value=2000,
-#                                      help='Number of documents to be used in each training chunk.'),
-#         'passes': st.number_input('Passes', min_value=1, value=1,
-#                                   help='Number of passes through the corpus during training.'),
-#         'update_every': st.number_input('Update Every', min_value=1, value=1,
-#                                         help='Number of documents to be iterated through for each update. Set to 0 for batch learning, > 1 for online iterative learning.'),
-#         'alpha': st.selectbox('𝛼', ('symmetric', 'asymmetric', 'auto'),
-#                               help='A priori belief on document-topic distribution.'),
-#         'eta': st.selectbox('𝜂', (None, 'symmetric', 'auto'), help='A-priori belief on topic-word distribution'),
-#         'decay': st.number_input('𝜅', min_value=0.5, max_value=1.0, value=0.5,
-#                                  help='A number between (0.5, 1] to weight what percentage of the previous lambda value is forgotten when each new document is examined.'),
-#         'offset': st.number_input('𝜏_0', value=1.0,
-#                                   help='Hyper-parameter that controls how much we will slow down the first steps the first few iterations.'),
-#         'eval_every': st.number_input('Evaluate Every', min_value=1, value=10,
-#                                       help='Log perplexity is estimated every that many updates.'),
-#         'iterations': st.number_input('Iterations', min_value=1, value=50,
-#                                       help='Maximum number of iterations through the corpus when inferring the topic distribution of a corpus.'),
-#         'gamma_threshold': st.number_input('𝛾', min_value=0.0, value=0.001,
-#                                            help='Minimum change in the value of the gamma parameters to continue iterating.'),
-#         'minimum_probability': st.number_input('Minimum Probability', min_value=0.0, max_value=1.0, value=0.01,
-#                                                help='Topics with a probability lower than this threshold will be filtered out.'),
-#         'minimum_phi_value': st.number_input('𝜑', min_value=0.0, value=0.01,
-#                                              help='if per_word_topics is True, this represents a lower bound on the term probabilities.'),
-#         'per_word_topics': st.checkbox('Per Word Topics',
-#                                        help='If True, the model also computes a list of topics, sorted in descending order of most likely topics for each word, along with their phi values multiplied by the feature length (i.e. word count).')
-#     }
+def lda_options():
+    return {
+        'num_topics': st.number_input('Number of Topics', min_value=1, value=9,
+                                      help='The number of requested latent topics to be extracted from the training corpus.'),
+        'chunksize': st.number_input('Chunk Size', min_value=1, value=2000,
+                                     help='Number of documents to be used in each training chunk.'),
+        'passes': st.number_input('Passes', min_value=1, value=1,
+                                  help='Number of passes through the corpus during training.'),
+        'update_every': st.number_input('Update Every', min_value=1, value=1,
+                                        help='Number of documents to be iterated through for each update. Set to 0 for batch learning, > 1 for online iterative learning.'),
+        'alpha': st.selectbox('𝛼', ('symmetric', 'asymmetric', 'auto'),
+                              help='A priori belief on document-topic distribution.'),
+        'eta': st.selectbox('𝜂', (None, 'symmetric', 'auto'), help='A-priori belief on topic-word distribution'),
+        'decay': st.number_input('𝜅', min_value=0.5, max_value=1.0, value=0.5,
+                                 help='A number between (0.5, 1] to weight what percentage of the previous lambda value is forgotten when each new document is examined.'),
+        'offset': st.number_input('𝜏_0', value=1.0,
+                                  help='Hyper-parameter that controls how much we will slow down the first steps the first few iterations.'),
+        'eval_every': st.number_input('Evaluate Every', min_value=1, value=10,
+                                      help='Log perplexity is estimated every that many updates.'),
+        'iterations': st.number_input('Iterations', min_value=1, value=50,
+                                      help='Maximum number of iterations through the corpus when inferring the topic distribution of a corpus.'),
+        'gamma_threshold': st.number_input('𝛾', min_value=0.0, value=0.001,
+                                           help='Minimum change in the value of the gamma parameters to continue iterating.'),
+        'minimum_probability': st.number_input('Minimum Probability', min_value=0.0, max_value=1.0, value=0.01,
+                                               help='Topics with a probability lower than this threshold will be filtered out.'),
+        'minimum_phi_value': st.number_input('𝜑', min_value=0.0, value=0.01,
+                                             help='if per_word_topics is True, this represents a lower bound on the term probabilities.'),
+        'per_word_topics': st.checkbox('Per Word Topics',
+                                       help='If True, the model also computes a list of topics, sorted in descending order of most likely topics for each word, along with their phi values multiplied by the feature length (i.e. word count).')
+    }
 
-# MODELS = {
-#     'Latent Dirichlet Allocation': {
-#         'options': lda_options,
-#         'class': gensim.models.LdaModel,
-#         'help': 'https://radimrehurek.com/gensim/models/ldamodel.html'
-#     }
-# }
+MODELS = {
+    'Latent Dirichlet Allocation': {
+        'options': lda_options,
+        'class': gensim.models.LdaModel,
+        'help': 'https://radimrehurek.com/gensim/models/ldamodel.html'
+    }
+}
 
-# COLORS = [color for color in mcolors.XKCD_COLORS.values()]
+COLORS = [color for color in mcolors.XKCD_COLORS.values()]
 
 @st.experimental_memo()
 def generate_texts_df(selected_dataset: str):
@@ -102,68 +102,110 @@ def clear_session_state():
         if key in st.session_state:
             del st.session_state[key]
 
-# def calculate_perplexity(model, corpus):
-#     return np.exp2(-model.log_perplexity(corpus))
+def calculate_perplexity(model, corpus):
+    return np.exp2(-model.log_perplexity(corpus))
 
 
-# def calculate_coherence(model, corpus, coherence):
-#     coherence_model = CoherenceModel(model=model, corpus=corpus, coherence=coherence)
-#     return coherence_model.get_coherence()
+def calculate_coherence(model, corpus, coherence):
+    coherence_model = CoherenceModel(model=model, corpus=corpus, coherence=coherence)
+    return coherence_model.get_coherence()
 
-# @st.experimental_memo()
-# def white_or_black_text(background_color):
-#     # https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
-#     red = int(background_color[1:3], 16)
-#     green = int(background_color[3:5], 16)
-#     blue = int(background_color[5:], 16)
-#     return 'black' if (red * 0.299 + green * 0.587 + blue * 0.114) > 186 else 'white'
-
-
-# def perplexity_section():
-#     with st.spinner('Calculating Perplexity ...'):
-#         perplexity = calculate_perplexity(st.session_state.model, st.session_state.corpus)
-#     key = 'previous_perplexity'
-#     delta = f'{perplexity - st.session_state[key]:.4}' if key in st.session_state else None
-#     st.metric(label='Perplexity', value=f'{perplexity:.4f}', delta=delta, delta_color='inverse')
-#     st.session_state[key] = perplexity
-#     st.markdown('Viz., https://en.wikipedia.org/wiki/Perplexity')
-#     st.latex(r'Perplexity = \exp\left(-\frac{\sum_d \log(p(w_d|\Phi, \alpha))}{N}\right)')
+@st.experimental_memo()
+def white_or_black_text(background_color):
+    # https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
+    red = int(background_color[1:3], 16)
+    green = int(background_color[3:5], 16)
+    blue = int(background_color[5:], 16)
+    return 'black' if (red * 0.299 + green * 0.587 + blue * 0.114) > 186 else 'white'
 
 
-# def coherence_section():
-#     with st.spinner('Calculating Coherence Score ...'):
-#         coherence = calculate_coherence(st.session_state.model, st.session_state.corpus, 'u_mass')
-#     key = 'previous_coherence_model_value'
-#     delta = f'{coherence - st.session_state[key]:.4f}' if key in st.session_state else None
-#     st.metric(label='Coherence Score', value=f'{coherence:.4f}', delta=delta)
-#     st.session_state[key] = coherence
-#     st.markdown('Viz., http://svn.aksw.org/papers/2015/WSDM_Topic_Evaluation/public.pdf')
-#     st.latex(
-#         r'C_{UMass} = \frac{2}{N \cdot (N - 1)}\sum_{i=2}^N\sum_{j=1}^{i-1}\log\frac{P(w_i, w_j) + \epsilon}{P(w_j)}')
+def perplexity_section():
+    with st.spinner('Calculating Perplexity ...'):
+        perplexity = calculate_perplexity(st.session_state.model, st.session_state.corpus)
+    key = 'previous_perplexity'
+    delta = f'{perplexity - st.session_state[key]:.4}' if key in st.session_state else None
+    st.metric(label='Perplexity', value=f'{perplexity:.4f}', delta=delta, delta_color='inverse')
+    st.session_state[key] = perplexity
+    st.markdown('Viz., https://en.wikipedia.org/wiki/Perplexity')
+    st.latex(r'Perplexity = \exp\left(-\frac{\sum_d \log(p(w_d|\Phi, \alpha))}{N}\right)')
 
 
-# @st.experimental_memo()
-# def train_projection(projection, n_components, df):
-#     if projection == 'PCA':
-#         projection_model = PCA(n_components=n_components)
-#     elif projection == 'T-SNE':
-#         projection_model = TSNE(n_components=n_components)
-#     elif projection == 'UMAP':
-#         projection_model = UMAP(n_components=n_components)
-#     data = projection_model.fit_transform(df.drop(columns=['dominant_topic']))
-#     return data
+def coherence_section():
+    with st.spinner('Calculating Coherence Score ...'):
+        coherence = calculate_coherence(st.session_state.model, st.session_state.corpus, 'u_mass')
+    key = 'previous_coherence_model_value'
+    delta = f'{coherence - st.session_state[key]:.4f}' if key in st.session_state else None
+    st.metric(label='Coherence Score', value=f'{coherence:.4f}', delta=delta)
+    st.session_state[key] = coherence
+    st.markdown('Viz., http://svn.aksw.org/papers/2015/WSDM_Topic_Evaluation/public.pdf')
+    st.latex(
+        r'C_{UMass} = \frac{2}{N \cdot (N - 1)}\sum_{i=2}^N\sum_{j=1}^{i-1}\log\frac{P(w_i, w_j) + \epsilon}{P(w_j)}')
 
+
+@st.experimental_memo()
+def train_projection(projection, n_components, df):
+    if projection == 'PCA':
+        projection_model = PCA(n_components=n_components)
+    elif projection == 'T-SNE':
+        projection_model = TSNE(n_components=n_components)
+    elif projection == 'UMAP':
+        projection_model = UMAP(n_components=n_components)
+    data = projection_model.fit_transform(df.drop(columns=['dominant_topic']))
+    return data
 
 if __name__ == '__main__':
     st.set_page_config(page_title='Topic Modeling', page_icon='./data/favicon.png', layout='wide')
-    st.title('Topic Modeling')
-    st.header('Datasets')
-    
-    with st.expander('Dataset Description'):
-        st.markdown(DATASETS['description'])
-        st.markdown(DATASETS['url'])
 
-    text_column = DATASETS['column']
+    preprocessing_options = st.sidebar.form('preprocessing-options')
+    with preprocessing_options:
+        st.header('Preprocessing Options')
+        ngrams = st.selectbox('N-grams', [None, 'bigrams', 'trigams'], help='TODO ...')  # TODO ...
+        st.form_submit_button('Preprocess')
+
+    visualization_options = st.sidebar.form('visualization-options')
+    with visualization_options:
+        st.header('Visualization Options')
+        collocations = st.checkbox('Enable WordCloud Collocations',
+                                   help='Collocations in word clouds enable the display of phrases.')
+        highlight_probability_minimum = st.select_slider('Highlight Probability Minimum',
+                                                         options=[10 ** exponent for exponent in range(-10, 1)],
+                                                         value=DEFAULT_HIGHLIGHT_PROBABILITY_MINIMUM,
+                                                         help='Minimum topic probability in order to color highlight a word in the _Topic Highlighted Sentences_ visualization.')
+        st.form_submit_button('Apply')
+
+    st.title('Topic Modeling')
+    st.header('What is topic modeling?')
+    with st.expander('Hero Image'):
+        st.image('./data/is-this-a-topic-modeling.jpg', caption='No ... no it\'s not ...', use_column_width=True)
+    st.markdown(
+        'Topic modeling is a broad term. It encompasses a number of specific statistical learning methods. '
+        'These methods do the following: explain documents in terms of a set of topics and those topics in terms of '
+        'the a set of words. Two very commonly used methods are Latent Dirichlet Allocation (LDA) and Non-Negative '
+        'Matrix Factorization (NMF), for instance. Used without additional qualifiers the approach is usually assumed '
+        'to be unsupervised although there are semi-supervised and supervised variants.'
+    )
+
+    with st.expander('Additional Details'):
+        st.markdown('The objective can be viewed as a matrix factorization.')
+        st.image('./data/mf.png', use_column_width=True)
+        st.markdown('This factorization makes the methods much more efficient than directly characterizing documents '
+                    'in term of words.')
+        st.markdown('More information on LDA and NMF can be found at '
+                    'https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation and '
+                    'https://en.wikipedia.org/wiki/Non-negative_matrix_factorization, respectively.')
+
+    st.header('Datasets')
+    st.markdown('Preloaded a couple of small example datasets to illustrate.')
+    selected_dataset = st.selectbox('Dataset', [None, *sorted(list(DATASETS.keys()))], on_change=clear_session_state)
+    if not selected_dataset:
+        st.write('Choose a Dataset to Conintue ...')
+        st.stop()
+
+    with st.expander('Dataset Description'):
+        st.markdown(DATASETS[selected_dataset]['description'])
+        st.markdown(DATASETS[selected_dataset]['url'])
+
+    text_column = DATASETS[selected_dataset]['column']
     texts_df = generate_texts_df(selected_dataset)
     docs = generate_docs(texts_df, text_column, ngrams=ngrams)
 
