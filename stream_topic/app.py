@@ -33,10 +33,10 @@ DATASETS = {
             'KBIZ 중소기업 중앙회, 중소기업 통계데이터'
         )
     },
-    'Airline Tweets': {
+    'Test': {
         'path': './data/소셜벤처실태조사_qual.csv',
         'column': 'Text',
-        'url': 'https://www.kaggle.com/crowdflower/twitter-airline-sentiment',
+        'url': 'test',
         'description': (
             'debugging'
         )
@@ -47,7 +47,7 @@ DATASETS = {
 
 def lda_options():
     return {
-        'num_topics': st.number_input('Number of Topics', min_value=1, value=9,
+        'num_topics': st.number_input('Number of Topics', min_value=1, value=5,
                                       help='The number of requested latent topics to be extracted from the training corpus.'),
         'chunksize': st.number_input('Chunk Size', min_value=1, value=2000,
                                      help='Number of documents to be used in each training chunk.'),
@@ -90,6 +90,14 @@ COLORS = [color for color in mcolors.XKCD_COLORS.values()]
 def generate_texts_df(selected_dataset: str):
     dataset = DATASETS[selected_dataset]
     return pd.read_csv(f'{dataset["path"]}')
+    
+@st.experimental_memo()
+def denoise_docs(texts_df: pd.DataFrame, text_column: str):
+    texts = texts_df[text_column].values.tolist()
+    remove_regex = regex.compile(f'({EMAIL_REGEX_STR}|{MENTION_REGEX_STR}|{HASHTAG_REGEX_STR}|{URL_REGEX_STR})')
+    texts = [regex.sub(remove_regex, '', text) for text in texts]
+    docs = [[w for w in simple_preprocess(doc, deacc=True) if w not in stopwords.words('english')] for doc in texts]
+    return docs
 
 @st.experimental_memo()
 def prepare_training_data(docs):
