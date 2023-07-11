@@ -26,16 +26,17 @@ DEFAULT_NUM_TOPICS = 4
 
 DATASETS = {
     '소셜벤처데이터': {
-        'path': '/data/소셜벤처실태조사_qual.csv',
+        'path': './data/소셜벤처실태조사_qual.csv',
         'column': 'Text',
         'url': 'https://www.kbiz.or.kr/ko/contest/view.do?seq=41&mnSeq=1202',
         'description': (
             'Data source: KBIZ 중소기업 중앙회, 중소기업 통계데이터' 
         )
-    }
+    },
+    'Others': {}
 }
 
-dataset = pd.read_csv('data/소셜벤처실태조사_qual.csv')
+# dataset = pd.read_csv('data/소셜벤처실태조사_qual.csv')
 
 # def lda_options():
 #     return {
@@ -78,37 +79,28 @@ dataset = pd.read_csv('data/소셜벤처실태조사_qual.csv')
 
 # COLORS = [color for color in mcolors.XKCD_COLORS.values()]
 
-# @st.experimental_memo()
-# def generate_texts_df(selected_dataset: str):
-#     dataset = DATASETS[selected_dataset]
-#     return pd.read_csv(f'{dataset["path"]}')
+@st.experimental_memo()
+def generate_texts_df(selected_dataset: str):
+    dataset = DATASETS[selected_dataset]
+    return pd.read_csv(f'{dataset["path"]}')
+
+@st.experimental_memo()
+def prepare_training_data(docs):
+    id2word = corpora.Dictionary(docs)
+    corpus = [id2word.doc2bow(doc) for doc in docs]
+    return id2word, corpus
 
 
-# @st.experimental_memo()
-# def denoise_docs(texts_df: pd.DataFrame, text_column: str):
-#     texts = texts_df[text_column].values.tolist()
-#     docs = [[w for w in simple_preprocess(doc, deacc=True) if w not in stopwords.words('english')] for doc in texts]
-#     return docs
+@st.experimental_memo()
+def train_model(docs, base_model, **kwargs):
+    id2word, corpus = prepare_training_data(docs)
+    model = base_model(corpus=corpus, id2word=id2word, **kwargs)
+    return id2word, corpus, model
 
-# @st.experimental_memo()
-# def prepare_training_data(docs):
-#     id2word = corpora.Dictionary(docs)
-#     corpus = [id2word.doc2bow(doc) for doc in docs]
-#     return id2word, corpus
-
-
-# @st.experimental_memo()
-# def train_model(docs, base_model, **kwargs):
-#     id2word, corpus = prepare_training_data(docs)
-#     model = base_model(corpus=corpus, id2word=id2word, **kwargs)
-#     return id2word, corpus, model
-
-
-# def clear_session_state():
-#     for key in ('model_kwargs', 'id2word', 'corpus', 'model', 'previous_perplexity', 'previous_coherence_model_value'):
-#         if key in st.session_state:
-#             del st.session_state[key]
-
+def clear_session_state():
+    for key in ('model_kwargs', 'id2word', 'corpus', 'model', 'previous_perplexity', 'previous_coherence_model_value'):
+        if key in st.session_state:
+            del st.session_state[key]
 
 # def calculate_perplexity(model, corpus):
 #     return np.exp2(-model.log_perplexity(corpus))
@@ -117,7 +109,6 @@ dataset = pd.read_csv('data/소셜벤처실태조사_qual.csv')
 # def calculate_coherence(model, corpus, coherence):
 #     coherence_model = CoherenceModel(model=model, corpus=corpus, coherence=coherence)
 #     return coherence_model.get_coherence()
-
 
 # @st.experimental_memo()
 # def white_or_black_text(background_color):
