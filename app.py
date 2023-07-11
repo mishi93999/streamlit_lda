@@ -35,10 +35,7 @@ DATASETS = {
     }
 }
 
-@st.experimental_memo()
-def generate_texts_df(selected_dataset: str):
-    dataset = DATASETS[selected_dataset]
-    return pd.read_csv(f'{dataset["path"]}')
+dataset = pd.read_csv(f'{dataset["path"]}')
 
 # def lda_options():
 #     return {
@@ -70,31 +67,6 @@ def generate_texts_df(selected_dataset: str):
 #         'per_word_topics': st.checkbox('Per Word Topics',
 #                                        help='If True, the model also computes a list of topics, sorted in descending order of most likely topics for each word, along with their phi values multiplied by the feature length (i.e. word count).')
 #     }
-
-
-# def nmf_options():
-#     return {
-#         'num_topics': st.number_input('Number of Topics', min_value=1, value=9, help='Number of topics to extract.'),
-#         'chunksize': st.number_input('Chunk Size', min_value=1, value=2000,
-#                                      help='Number of documents to be used in each training chunk.'),
-#         'passes': st.number_input('Passes', min_value=1, value=1,
-#                                   help='Number of full passes over the training corpus.'),
-#         'kappa': st.number_input('𝜅', min_value=0.0, value=1.0, help='Gradient descent step size.'),
-#         'minimum_probability': st.number_input('Minimum Probability', min_value=0.0, max_value=1.0, value=0.01,
-#                                                help='If normalize is True, topics with smaller probabilities are filtered out. If normalize is False, topics with smaller factors are filtered out. If set to None, a value of 1e-8 is used to prevent 0s.'),
-#         'w_max_iter': st.number_input('W max iter', min_value=1, value=200,
-#                                       help='Maximum number of iterations to train W per each batch.'),
-#         'w_stop_condition': st.number_input('W stop cond', min_value=0.0, value=0.0001,
-#                                             help=' If error difference gets less than that, training of W stops for the current batch.'),
-#         'h_max_iter': st.number_input('H max iter', min_value=1, value=50,
-#                                       help='Maximum number of iterations to train h per each batch.'),
-#         'h_stop_condition': st.number_input('W stop cond', min_value=0.0, value=0.001,
-#                                             help='If error difference gets less than that, training of h stops for the current batch.'),
-#         'eval_every': st.number_input('Evaluate Every', min_value=1, value=10,
-#                                       help='Number of batches after which l2 norm of (v - Wh) is computed.'),
-#         'normalize': st.selectbox('Normalize', (True, False, None), help='Whether to normalize the result.')
-#     }
-    
 
 # MODELS = {
 #     'Latent Dirichlet Allocation': {
