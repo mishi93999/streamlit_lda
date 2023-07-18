@@ -100,6 +100,33 @@ def denoise_docs(texts_df: pd.DataFrame, text_column: str):
     return docs
 
 @st.experimental_memo()
+def create_bigrams(docs):
+    bigram_phrases = gensim.models.Phrases(docs)
+    bigram_phraser = gensim.models.phrases.Phraser(bigram_phrases)
+    docs = [bigram_phraser[doc] for doc in docs]
+    return docs
+
+
+@st.experimental_memo()
+def create_trigrams(docs):
+    bigram_phrases = gensim.models.Phrases(docs)
+    bigram_phraser = gensim.models.phrases.Phraser(bigram_phrases)
+    trigram_phrases = gensim.models.Phrases(bigram_phrases[docs])
+    trigram_phraser = gensim.models.phrases.Phraser(trigram_phrases)
+    docs = [trigram_phraser[bigram_phraser[doc]] for doc in docs]
+    return docs
+
+
+@st.experimental_memo()
+def generate_docs(texts_df: pd.DataFrame, text_column: str, ngrams: str = None):
+    docs = denoise_docs(texts_df, text_column)
+    if ngrams == 'bigrams':
+        docs = create_bigrams(docs)
+    if ngrams == 'trigrams':
+        docs = create_trigrams(docs)
+    return docs
+
+@st.experimental_memo()
 def prepare_training_data(docs):
     id2word = corpora.Dictionary(docs)
     corpus = [id2word.doc2bow(doc) for doc in docs]
@@ -119,7 +146,6 @@ def clear_session_state():
 
 def calculate_perplexity(model, corpus):
     return np.exp2(-model.log_perplexity(corpus))
-
 
 def calculate_coherence(model, corpus, coherence):
     coherence_model = CoherenceModel(model=model, corpus=corpus, coherence=coherence)
@@ -177,16 +203,16 @@ if __name__ == '__main__':
         ngrams = st.selectbox('N-grams', [None, 'bigrams', 'trigams'], help='TODO ...')  # TODO ...
         st.form_submit_button('Preprocess')
 
-    visualization_options = st.sidebar.form('visualization-options')
-    with visualization_options:
-        st.header('Visualization Options')
-        collocations = st.checkbox('Enable WordCloud Collocations',
-                                   help='Collocations in word clouds enable the display of phrases.')
-        highlight_probability_minimum = st.select_slider('Highlight Probability Minimum',
-                                                         options=[10 ** exponent for exponent in range(-10, 1)],
-                                                         value=DEFAULT_HIGHLIGHT_PROBABILITY_MINIMUM,
-                                                         help='Minimum topic probability in order to color highlight a word in the _Topic Highlighted Sentences_ visualization.')
-        st.form_submit_button('Apply')
+    # visualization_options = st.sidebar.form('visualization-options')
+    # with visualization_options:
+    #     st.header('Visualization Options')
+    #     collocations = st.checkbox('Enable WordCloud Collocations',
+    #                                help='Collocations in word clouds enable the display of phrases.')
+    #     highlight_probability_minimum = st.select_slider('Highlight Probability Minimum',
+    #                                                      options=[10 ** exponent for exponent in range(-10, 1)],
+    #                                                      value=DEFAULT_HIGHLIGHT_PROBABILITY_MINIMUM,
+    #                                                      help='Minimum topic probability in order to color highlight a word in the _Topic Highlighted Sentences_ visualization.')
+    #     st.form_submit_button('Apply')
 
     st.title('Topic Modeling')
     st.header('What is topic modeling?')
