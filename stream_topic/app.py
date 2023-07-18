@@ -108,7 +108,7 @@ with st.expander('Additional Details'):
 
 st.header('Datasets')
 st.markdown('Preloaded a couple of small example datasets to illustrate.')
-selected_dataset = st.selectbox('Dataset', [None, *sorted(list(df.keys()))], on_change=clear_session_state)
+selected_dataset = st.selectbox('Dataset', [None, *sorted(list(df.keys()))])
 if not selected_dataset:
     st.write('Choose a Dataset to Conintue ...')
     st.stop()
