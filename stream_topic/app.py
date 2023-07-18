@@ -25,7 +25,7 @@ import plotly.express as px
 DEFAULT_HIGHLIGHT_PROBABILITY_MINIMUM = 0.001
 DEFAULT_NUM_TOPICS = 4
 
-df = {
+DATASETS = {
     'Social Venture Data': {
         'path': './data/소셜벤처실태조사_qual.csv',
         'column': 'Text',
@@ -106,14 +106,14 @@ with st.expander('Additional Details'):
 
 st.header('Datasets')
 st.markdown('Preloaded a couple of small example datasets to illustrate.')
-selected_dataset = st.selectbox('Dataset')
+selected_dataset = st.selectbox('Dataset',[None, *sorted(list(DATASETS.keys()))])
 if not selected_dataset:
     st.write('Choose a Dataset...')
     st.stop()
 
 with st.expander('Dataset Description'):
-    st.markdown(df[selected_dataset]['description'])
-    st.markdown(df[selected_dataset]['url'])
+    st.markdown(DATASETS[selected_dataset]['description'])
+    st.markdown(DATASETS[selected_dataset]['url'])
 
 
 df[selected_dataset]
