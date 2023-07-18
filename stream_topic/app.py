@@ -86,6 +86,26 @@ MODELS = {
 
 COLORS = [color for color in mcolors.XKCD_COLORS.values()]
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @st.experimental_memo()
 def generate_texts_df(selected_dataset: str):
     dataset = DATASETS[selected_dataset]
