@@ -249,10 +249,10 @@ if __name__ == '__main__':
         for index, text in enumerate(sample_texts):
             st.markdown(f'**{index + 1}**: _{text}_')
 
-    with st.expander('Frequency Sized Corpus Wordcloud'):
-        wc = generate_wordcloud(docs)
-        st.image(wc.to_image(), caption='Dataset Wordcloud (Not A Topic Model)', use_column_width=True)
-        st.markdown('These are the remaining words after document preprocessing.')
+    # with st.expander('Frequency Sized Corpus Wordcloud'):
+    #     wc = generate_wordcloud(docs)
+    #     st.image(wc.to_image(), caption='Dataset Wordcloud (Not A Topic Model)', use_column_width=True)
+    #     st.markdown('These are the remaining words after document preprocessing.')
 
     with st.expander('Document Word Count Distribution'):
         len_docs = [len(doc) for doc in docs]
