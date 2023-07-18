@@ -24,7 +24,7 @@ from gensim.models.callbacks import CoherenceMetric
 from gensim import corpora, models
 from gensim.models.callbacks import PerplexityMetric
 
-import gensim, spacy, logging, warnings
+import gensim, logging, warnings
 from gensim.models import CoherenceModel
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
