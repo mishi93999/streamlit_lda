@@ -90,7 +90,13 @@ COLORS = [color for color in mcolors.XKCD_COLORS.values()]
 def generate_texts_df(selected_dataset: str):
     dataset = DATASETS[selected_dataset]
     return pd.read_csv(f'{dataset["path"]}')
-    
+
+@st.experimental_memo()
+def denoise_docs(texts_df: pd.DataFrame, text_column: str):
+    texts = texts_df[text_column].values.tolist()
+    texts = [regex.sub(remove_regex, '', text) for text in texts]
+    docs = [[w for w in simple_preprocess(doc, deacc=True) if w not in stopwords.words('english')] for doc in texts]
+    return docs
 
 @st.experimental_memo()
 def create_bigrams(docs):
