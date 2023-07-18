@@ -146,7 +146,7 @@ with st.expander('Dataset Description'):
 
 
 df = generate_texts_df(selected_dataset)
-df['clean_text'] = df['clean_text'].str.replace('\d+',"")
+# df['clean_text'] = df['clean_text'].str.replace('\d+',"")
 
 okt = Okt()
 #text data to list
