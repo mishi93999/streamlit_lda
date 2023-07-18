@@ -44,6 +44,10 @@ DATASETS = {
     }
 }
 
+@st.experimental_memo()
+def generate_texts_df(selected_dataset: str):
+    dataset = DATASETS[selected_dataset]
+    return pd.read_csv(f'{dataset["path"]}')
 
 def lda_options():
     return {
@@ -116,7 +120,7 @@ with st.expander('Dataset Description'):
     st.markdown(DATASETS[selected_dataset]['url'])
 
 
-DATASETS[selected_dataset]
+df = generate_texts_df(selected_dataset)
 
 # df[selected_dataset]['clean_text'] = df[selected_dataset]['clean_text'].str.replace('\d+',"")
 
