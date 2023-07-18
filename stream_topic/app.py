@@ -301,15 +301,15 @@ if __name__ == '__main__':
             st.markdown(f'**Topic {topic_index}**: _{topic_summary}_')
 
     colors = random.sample(COLORS, k=model_kwargs['num_topics'])
-    with st.expander('Top N Topic Keywords Wordclouds'):
-        cols = st.columns(3)
-        for index, topic in enumerate(topics):
-            wc = WordCloud(font_path=WORDCLOUD_FONT_PATH, width=700, height=600,
-                           background_color='white', collocations=collocations, prefer_horizontal=1.0,
-                           color_func=lambda *args, **kwargs: colors[index])
-            with cols[index % 3]:
-                wc.generate_from_frequencies(dict(topic[1]))
-                st.image(wc.to_image(), caption=f'Topic #{index}', use_column_width=True)
+    # with st.expander('Top N Topic Keywords Wordclouds'):
+    #     cols = st.columns(3)
+    #     for index, topic in enumerate(topics):
+    #         wc = WordCloud(font_path=WORDCLOUD_FONT_PATH, width=700, height=600,
+    #                        background_color='white', collocations=collocations, prefer_horizontal=1.0,
+    #                        color_func=lambda *args, **kwargs: colors[index])
+    #         with cols[index % 3]:
+    #             wc.generate_from_frequencies(dict(topic[1]))
+    #             st.image(wc.to_image(), caption=f'Topic #{index}', use_column_width=True)
 
     with st.expander('Topic Highlighted Sentences'):
         sample = texts_df.sample(10)
