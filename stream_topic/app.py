@@ -45,8 +45,6 @@ df = {
 }
 
 
-
-
 def lda_options():
     return {
         'num_topics': st.number_input('Number of Topics', min_value=1, value=5,
@@ -108,20 +106,23 @@ with st.expander('Additional Details'):
 
 st.header('Datasets')
 st.markdown('Preloaded a couple of small example datasets to illustrate.')
-selected_dataset = st.selectbox('Dataset', [None, *sorted(list(df.keys()))])
+selected_dataset = st.selectbox('Dataset')
 if not selected_dataset:
-    st.write('Choose a Dataset to Conintue ...')
+    st.write('Choose a Dataset...')
     st.stop()
 
 with st.expander('Dataset Description'):
     st.markdown(df[selected_dataset]['description'])
     st.markdown(df[selected_dataset]['url'])
 
-df[selected_dataset]['clean_text'] = df[selected_dataset]['clean_text'].str.replace('\d+',"")
 
-okt = Okt()
-df_text = df['clean_text'].tolist()
-okt.morphs(df_text[2])
+df[selected_dataset]
+
+# df[selected_dataset]['clean_text'] = df[selected_dataset]['clean_text'].str.replace('\d+',"")
+
+# okt = Okt()
+# df_text = df['clean_text'].tolist()
+# okt.morphs(df_text[2])
 
 # with st.expander('Sample Documents'):
 #     sample_texts = texts_df[text_column].sample(5).values.tolist()
