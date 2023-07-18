@@ -18,6 +18,15 @@ from gensim import corpora
 from gensim.models import CoherenceModel
 from gensim.utils import simple_preprocess
 
+
+from gensim.models.ldamodel import LdaModel
+from gensim.models.callbacks import CoherenceMetric
+from gensim import corpora, models
+from gensim.models.callbacks import PerplexityMetric
+
+import gensim, spacy, logging, warnings
+from gensim.models import CoherenceModel
+import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
 import matplotlib.colors as mcolors
 import plotly.express as px
@@ -48,6 +57,22 @@ DATASETS = {
 def generate_texts_df(selected_dataset: str):
     dataset = DATASETS[selected_dataset]
     return pd.read_csv(f'{dataset["path"]}')
+
+@st.experimental_memo()
+def prepare_training_data(data_word):
+    id2word = corpora.Dictionary(data_word)
+    id2word.filter_extremes(no_below = 10)
+    #create corpus: term document frequency
+    corpus = [id2word.doc2bow(text) for text in data_word]
+    return id2word, corpus
+
+
+@st.experimental_memo()
+def train_model(data_word, base_model, **kwargs):
+    id2word, corpus = prepare_training_data(data_word)
+    model = base_model(corpus=corpus, id2word=id2word, **kwargs)
+    return id2word, corpus, model
+
 
 def lda_options():
     return {
@@ -121,47 +146,42 @@ with st.expander('Dataset Description'):
 
 
 df = generate_texts_df(selected_dataset)
+df['clean_text'] = df['clean_text'].str.replace('\d+',"")
 
-# df[selected_dataset]['clean_text'] = df[selected_dataset]['clean_text'].str.replace('\d+',"")
+okt = Okt()
+#text data to list
+df_text = df['clean_text'].tolist()
 
-# okt = Okt()
-# df_text = df['clean_text'].tolist()
-# okt.morphs(df_text[2])
+# save as list
+data_word=[]
+for i in range(len(df_text)):
+    try:
+        data_word.append(okt.nouns(df_text[i]))
+    except Exception as e:
+        continue
 
-# with st.expander('Sample Documents'):
-#     sample_texts = texts_df[text_column].sample(5).values.tolist()
-#     for index, text in enumerate(sample_texts):
-#         st.markdown(f'**{index + 1}**: _{text}_')
+#명사만 추출해서 만든 리스트
+data_word
 
-# # with st.expander('Frequency Sized Corpus Wordcloud'):
-# #     wc = generate_wordcloud(docs)
-# #     st.image(wc.to_image(), caption='Dataset Wordcloud (Not A Topic Model)', use_column_width=True)
-# #     st.markdown('These are the remaining words after document preprocessing.')
 
-# with st.expander('Document Word Count Distribution'):
-#     len_docs = [len(doc) for doc in docs]
-#     fig, ax = plt.subplots()
-#     sns.histplot(data=pd.DataFrame(len_docs, columns=['Words In Document']), discrete=True, ax=ax)
-#     st.pyplot(fig)
+model_key = st.sidebar.selectbox('Model', [None, *list(MODELS.keys())])
+model_options = st.sidebar.form('model-options')
+if not model_key:
+    with st.sidebar:
+        st.write('Choose a Model to Continue ...')
+    st.stop()
+with model_options:
+    st.header('Model Options')
+    model_kwargs = MODELS[model_key]['options']()
+    st.session_state['model_kwargs'] = model_kwargs
+    train_model_clicked = st.form_submit_button('Train Model')
 
-# model_key = st.sidebar.selectbox('Model', [None, *list(MODELS.keys())], on_change=clear_session_state)
-# model_options = st.sidebar.form('model-options')
-# if not model_key:
-#     with st.sidebar:
-#         st.write('Choose a Model to Continue ...')
-#     st.stop()
-# with model_options:
-#     st.header('Model Options')
-#     model_kwargs = MODELS[model_key]['options']()
-#     st.session_state['model_kwargs'] = model_kwargs
-#     train_model_clicked = st.form_submit_button('Train Model')
-
-# if train_model_clicked:
-#     with st.spinner('Training Model ...'):
-#         id2word, corpus, model = train_model(docs, MODELS[model_key]['class'], **st.session_state.model_kwargs)
-#     st.session_state.id2word = id2word
-#     st.session_state.corpus = corpus
-#     st.session_state.model = model
+if train_model_clicked:
+    with st.spinner('Training Model ...'):
+        id2word, corpus, model = train_model(data_word, MODELS[model_key]['class'], **st.session_state.model_kwargs)
+    st.session_state.id2word = id2word
+    st.session_state.corpus = corpus
+    st.session_state.model = model
 
 # if 'model' not in st.session_state:
 #     st.stop()
