@@ -116,7 +116,7 @@ with st.expander('Dataset Description'):
     st.markdown(DATASETS[selected_dataset]['url'])
 
 
-df[selected_dataset]
+DATASETS[selected_dataset]
 
 # df[selected_dataset]['clean_text'] = df[selected_dataset]['clean_text'].str.replace('\d+',"")
 
