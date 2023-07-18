@@ -94,8 +94,7 @@ def generate_texts_df(selected_dataset: str):
 @st.experimental_memo()
 def denoise_docs(texts_df: pd.DataFrame, text_column: str):
     texts = texts_df[text_column].values.tolist()
-    docs = [[w for w in simple_preprocess(doc, deacc=True) if w not in stopwords.words('english')] for doc in texts]
-    return docs
+    return texts
 
 @st.experimental_memo()
 def create_bigrams(docs):
